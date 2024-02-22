@@ -1,11 +1,12 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class Node : MonoBehaviour
+[Serializable]
+public class Node
 {
     private enum NodeType
     {
@@ -28,23 +29,27 @@ public class Node : MonoBehaviour
         TreasureMiniBoss,
     }
 
+    [field: SerializeField] public Vector2 Position;
     [field: SerializeField] private NodeType _roomType;
     [field: SerializeField] private CombinationType _comboType;
-    [field: SerializeField] private TextMeshPro _lettering;
+    [field: SerializeField] private string _label;
+    [field: SerializeField] private Color _colour;
+    private List<Node> ConnectedNodes = new List<Node>();
 
-    [field: SerializeField] private SpriteRenderer _sprite;
-
-    // Start is called before the first frame update
-    void Start()
+    public Node(Vector2 position)
     {
-        SetText();
-        SetColour();
+        Position = position;
+        SetNodeType(0);
+        ConnectedNodes = new List<Node>();
     }
 
-    // Update is called once per frame
-    void Update()
+    public void ConnectTo(Node otherNode)
     {
-        
+        if (!ConnectedNodes.Contains(otherNode))
+        {
+            ConnectedNodes.Add(otherNode);
+            otherNode.ConnectTo(this);
+        }
     }
 
     public void SetNodeType(int NodeTypeNumber)
@@ -64,46 +69,46 @@ public class Node : MonoBehaviour
         switch (_roomType)
         {
             case NodeType.Unassigned:
-                _lettering.text = "U";
+                _label = "U";
                 break;
             case NodeType.Start:
-                _lettering.text = "S";
+                _label = "S";
                 break;
             case NodeType.Puzzle:
-                _lettering.text = "P";
+                _label = "P";
                 break;
             case NodeType.Treasure:
-                _lettering.text = "T";
+                _label = "T";
                 break;
             case NodeType.Encounter:
-                _lettering.text = "E";
+                _label = "E";
                 break;
             case NodeType.MiniBoss:
-                _lettering.text = "M";
+                _label = "M";
                 break;
             case NodeType.Combination:
                 switch (_comboType)
                 {
                     case CombinationType.PuzzleEncounter:
-                        _lettering.text = "P+E";
+                        _label = "P+E";
                         break;
                     case CombinationType.PuzzleTreasure:
-                        _lettering.text = "P+T";
+                        _label = "P+T";
                         break;
                     case CombinationType.TreasureEncounter:
-                        _lettering.text = "T+E";
+                        _label = "T+E";
                         break;
                     case CombinationType.TreasureMiniBoss:
-                        _lettering.text = "T+M";
+                        _label = "T+M";
                         break;
                 }
 
                 break;
             case NodeType.Boss:
-                _lettering.text = "B";
+                _label = "B";
                 break;
             case NodeType.End:
-                _lettering.text = "X";
+                _label = "X";
                 break;
         }
     }
@@ -113,68 +118,47 @@ public class Node : MonoBehaviour
         switch (_roomType)
         {
             case NodeType.Unassigned:
-                _sprite.color = Color.black;
-                _lettering.color = Color.white;
+                _colour = Color.white;
                 break;
             case NodeType.Start:
-                _sprite.color = Color.blue;
-                _lettering.color = Color.white; 
+                _colour = Color.white;
                 break;
             case NodeType.Puzzle:
-                _sprite.color = Color.cyan;
-                _lettering.color = Color.white;
+                _colour = Color.white;
                 break;
             case NodeType.Treasure:
-                _sprite.color = Color.yellow;
-                _lettering.color = Color.black;
+                _colour = Color.black;
                 break;
             case NodeType.Encounter:
-                _sprite.color = Color.white;
-                _lettering.color = Color.black;
+                _colour = Color.black;
                 break;
             case NodeType.MiniBoss:
-                _sprite.color = Color.magenta;
-                _lettering.color = Color.white;
+                _colour = Color.white;
                 break;
             case NodeType.Combination:
                 switch (_comboType)
                 {
                     case CombinationType.PuzzleEncounter:
-                        _sprite.color = Color.gray;
-                        _lettering.color = Color.red;
+                        _colour = Color.red;
                         break;
                     case CombinationType.PuzzleTreasure:
-                        _sprite.color = Color.gray;
-                        _lettering.color = Color.yellow;
+                        _colour = Color.yellow;
                         break;
                     case CombinationType.TreasureEncounter:
-                        _sprite.color = Color.gray;
-                        _lettering.color = Color.blue;
+                        _colour = Color.blue;
                         break;
                     case CombinationType.TreasureMiniBoss:
-                        _sprite.color = Color.gray;
-                        _lettering.color = Color.green;
+                        _colour = Color.green;
                         break;
                 }
 
                 break;
             case NodeType.Boss:
-                _sprite.color = Color.red;
-                _lettering.color = Color.black;
+                _colour = Color.black;
                 break;
             case NodeType.End:
-                _sprite.color = Color.green;
-                _lettering.color = Color.black;
+                _colour = Color.black;
                 break;
         }
-    }
-
-    private void OnDrawGizmos()
-    {
-        Gizmos.color = Color.red;
-        Gizmos.DrawSphere(transform.position + Vector3.up * 0.25f, 0.1f);
-        Gizmos.DrawSphere(transform.position + Vector3.down * 0.25f, 0.1f);
-        Gizmos.DrawSphere(transform.position + Vector3.left * 0.25f, 0.1f);
-        Gizmos.DrawSphere(transform.position + Vector3.right * 0.25f, 0.1f);
     }
 }
