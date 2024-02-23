@@ -6,7 +6,6 @@ using Random = UnityEngine.Random;
 
 public class RoomPlacement : MonoBehaviour
 {
-
     [SerializeField] [Range(8, 32)] private float _gridCellHeight = 8, _gridCellWidth = 8;
     [SerializeField] private int _iterations;
     [SerializeField] [Range(10, 20)] private int _numberOfRooms = 10;
@@ -21,18 +20,13 @@ public class RoomPlacement : MonoBehaviour
     public List<GameObject> Rooms => _rooms;
 
     [SerializeField] private GameObject _roomPrefab;
-    // Start is called before the first frame update
-
-    private void Awake()
-    {
-    }
+    [SerializeField] private GameObject _TestPrefab;
 
     void Start()
     {
         _iterations = 6;
         _numberOfRooms = 10;
         MapGen();
-        //StartCoroutine(MapGeneration());
     }
 
     private IEnumerator MapGeneration()
@@ -138,22 +132,20 @@ public class RoomPlacement : MonoBehaviour
         }
     }
 
+    public void Spawn()
+    {
+        var Room = _rooms[0].GetComponent<RoomData>();
+
+        var newRoom = Instantiate(_TestPrefab, new Vector3(50, 50), Quaternion.identity, null);
+        newRoom.GetComponent<RoomData>().SetRoom(Room);
+        _rooms.Add(newRoom);
+    }
+
     private void PlaceRoom(RoomData room, Vector2 position)
     {
         var CurrentRoom = Instantiate(_roomPrefab, position, Quaternion.identity, null);
     }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
-    private void GenerateMST()
-    {
-        
-    }
-
+    
     private void FindRoomLocations()
     {
         _roomPositions = RandomWalker.RandomWalk(Vector2.zero, _numberOfRooms, _gridCellHeight);

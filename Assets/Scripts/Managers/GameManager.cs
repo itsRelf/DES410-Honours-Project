@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -18,7 +16,13 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        SpawnPlayer();
+        SpawnPlayer(); 
+        SpawnRoom();
+    }
+
+    private void SpawnRoom()
+    {
+        _roomGenerator.Spawn();
     }
 
     private void SpawnPlayer()
@@ -30,5 +34,15 @@ public class GameManager : MonoBehaviour
     void Update()
     {
         _mainCamera.transform.position = _player.transform.position;
+    }
+
+    private void Checkroom()
+    {
+        foreach(var room in _roomGenerator.Rooms)
+        {
+            if(room.GetComponent<RoomData>()._playerInRoom)
+                    _mainCamera.transform.position = room.transform.position;
+
+        }
     }
 }

@@ -133,7 +133,6 @@ GameObject:
   m_Component:
   - component: {fileID: 444150640}
   - component: {fileID: 444150641}
-  - component: {fileID: 444150642}
   m_Layer: 0
   m_Name: Generator
   m_TagString: Untagged
@@ -181,25 +180,7 @@ MonoBehaviour:
   _StartRooms: []
   _rooms: []
   _roomPrefab: {fileID: 5543078929555600958, guid: 88c33f1aea64db343bf886ece1a6384b, type: 3}
---- !u!114 &444150642
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 444150638}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b72c7f8f248a64a45a2b56c6a355f82c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _floorTilemap: {fileID: 0}
-  _tile: {fileID: 0}
-  _tiles: []
-  _colors: []
-  _tileData:
-  - {fileID: 11400000, guid: 8c291fc2dd1b3d44695680edcc7755fe, type: 2}
-  - {fileID: 11400000, guid: cc38c7c0ebcc7af4e862c6462ff1099f, type: 2}
+  _TestPrefab: {fileID: 3583016459807050861, guid: 35e2e44fa06b66943a771762618c1a0b, type: 3}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
