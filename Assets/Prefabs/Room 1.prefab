@@ -5724,8 +5724,8 @@ MonoBehaviour:
   _positions: []
   <_EnemyPositions>k__BackingField: []
   <_ItemPositions>k__BackingField: []
-  _playerInRoom: 0
-  _firstVisit: 0
+  <_playerInRoom>k__BackingField: 0
+  <_firstVisit>k__BackingField: 0
 --- !u!61 &6245638312849906738
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -5750,7 +5750,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 9, y: 9}
+  m_Size: {x: 8, y: 8}
   m_EdgeRadius: 0
 --- !u!61 &7191274881782152449
 BoxCollider2D:

@@ -2817,15 +2817,17 @@ MonoBehaviour:
   _doorLeft: {fileID: 2065491105040609316}
   _doorRight: {fileID: 5077937957928921331}
   _mainTrigger: {fileID: 2439011490835857842}
-  _doorUpTrigger: {fileID: 0}
-  _doorDownTrigger: {fileID: 0}
-  _doorLeftTrigger: {fileID: 0}
-  _doorRightTrigger: {fileID: 0}
+  _doorUpTrigger: {fileID: 5515267634751365057}
+  _doorDownTrigger: {fileID: 4305521166684622315}
+  _doorLeftTrigger: {fileID: 2084006493662071510}
+  _doorRightTrigger: {fileID: 8496478460374553511}
   _positions: []
   <_EnemyPositions>k__BackingField:
   - {x: -2, y: 2, z: 0}
   - {x: 2, y: 2, z: 0}
   <_ItemPositions>k__BackingField: []
+  <_playerInRoom>k__BackingField: 0
+  <_firstVisit>k__BackingField: 0
 --- !u!61 &2439011490835857842
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -2850,7 +2852,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 9, y: 9}
+  m_Size: {x: 8, y: 8}
   m_EdgeRadius: 0
 --- !u!61 &5515267634751365057
 BoxCollider2D:

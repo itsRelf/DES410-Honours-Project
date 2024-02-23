@@ -23,8 +23,8 @@ public class RoomData : MonoBehaviour
     [field: SerializeField] public List<Vector3Int> _EnemyPositions { get; private set; }
     [field: SerializeField] public List<Vector3Int> _ItemPositions { get; private set; }
 
-    [SerializeField] public bool _playerInRoom { get; set; }
-    [SerializeField] public bool _firstVisit { get; set; }
+    [field: SerializeField] public bool _playerInRoom { get; set; }
+    [field: SerializeField] public bool _firstVisit { get; set; }
 
     private void Awake()
     {
@@ -54,22 +54,37 @@ public class RoomData : MonoBehaviour
 
     private void FixedUpdate()
     {
-        //transform.GetChild(0).gameObject.SetActive(_playerInRoom);
+        transform.GetChild(0).gameObject.SetActive(_playerInRoom);
     }
 
     private void SetDoors()
     {
-        foreach (var connection in _usedConnections)
+        _usedConnections.ForEach(connection =>
         {
-            if (connection.ConDirection == RoomConnections.ConnectionDirections.Up)
-                _doorUp.SetActive(false);
-            else if (connection.ConDirection == RoomConnections.ConnectionDirections.Down)
-                _doorDown.SetActive(false);
-            else if (connection.ConDirection == RoomConnections.ConnectionDirections.Left)
-                _doorLeft.SetActive(false);
-            else if (connection.ConDirection == RoomConnections.ConnectionDirections.Right)
-                _doorRight.SetActive(false);
-        }
+            switch (connection.ConDirection)
+            {
+                case RoomConnections.ConnectionDirections.Up:
+                    _doorUp.SetActive(false);
+                    break;
+                case RoomConnections.ConnectionDirections.Down:
+                    _doorDown.SetActive(false);
+
+                    break;
+                case RoomConnections.ConnectionDirections.Left:
+                    _doorLeft.SetActive(false);
+
+                    break;
+                case RoomConnections.ConnectionDirections.Right:
+                    _doorRight.SetActive(false);
+
+                    break;
+            }
+        });
+        _doorUpTrigger.enabled = !_doorUp.activeSelf;
+        _doorDownTrigger.enabled = !_doorDown.activeSelf;
+        _doorLeftTrigger.enabled = !_doorLeft.activeSelf;
+        _doorRightTrigger.enabled = !_doorRight.activeSelf;
+
     }
 
     public void SetRoom(RoomData otherRoom)
@@ -131,11 +146,16 @@ public class RoomData : MonoBehaviour
             Debug.Log("Player Coming From the Left");
         }
     }
-
     private void OnTriggerExit2D(Collider2D other)
     {
-        if (other.tag == "Player")
+        Debug.Log(other.tag);
+        var tag = other.tag;
+        if (!_mainTrigger.bounds.Intersects(other.bounds))
+        {
+            if (tag != "Player") return;
+            Debug.Log("Player in Room");
             _playerInRoom = false;
+        }
     }
     private void OnDrawGizmos()
     {

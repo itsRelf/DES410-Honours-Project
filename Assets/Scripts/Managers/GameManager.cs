@@ -33,7 +33,11 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        _mainCamera.transform.position = _player.transform.position;
+    }
+
+    private void FixedUpdate()
+    {
+        Checkroom();
     }
 
     private void Checkroom()
