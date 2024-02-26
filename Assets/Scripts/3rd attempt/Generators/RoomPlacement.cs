@@ -65,10 +65,10 @@ public class RoomPlacement : MonoBehaviour
         for (var i = 1; i < 20; i++)
         {
             var currentRoomData = currentRoom.GetComponent<RoomData>();
-            var randomIndex = Random.Range(0, currentRoomData._OpenConnections.Count);
-            if (currentRoomData._OpenConnections.Count == 0) continue;
+            var randomIndex = Random.Range(0, currentRoomData.OpenConnections.Count);
+            if (currentRoomData.OpenConnections.Count == 0) continue;
             
-            var randomDirection = currentRoomData._OpenConnections[randomIndex].ConDirection;
+            var randomDirection = currentRoomData.OpenConnections[randomIndex].ConDirection;
             Vector2 newPosition = currentRoom.transform.position;
             switch (randomDirection)
             {
@@ -102,25 +102,25 @@ public class RoomPlacement : MonoBehaviour
             {
                 case true:
                     var connectingRoomData = _rooms[roomIndex].GetComponent<RoomData>();
-                    currentRoomData._OpenConnections[randomIndex].RoomIndex = roomIndex;
-                    currentRoomData._usedConnections.Add(currentRoomData._OpenConnections[randomIndex]);
-                    connectingRoomData._usedConnections.Add(new RoomConnections(currentRoomData._OpenConnections[randomIndex].OppositeDirection, i));
-                    removeIndex = connectingRoomData._OpenConnections.FindIndex(a =>
-                        a.ConDirection == currentRoomData._OpenConnections[randomIndex].OppositeDirection);
-                    connectingRoomData._OpenConnections.RemoveAt(removeIndex);
-                    currentRoomData._OpenConnections.RemoveAt(randomIndex);
+                    currentRoomData.OpenConnections[randomIndex].RoomIndex = roomIndex;
+                    currentRoomData.UsedConnections.Add(currentRoomData.OpenConnections[randomIndex]);
+                    connectingRoomData.UsedConnections.Add(new RoomConnections(currentRoomData.OpenConnections[randomIndex].OppositeDirection, i));
+                    removeIndex = connectingRoomData.OpenConnections.FindIndex(a =>
+                        a.ConDirection == currentRoomData.OpenConnections[randomIndex].OppositeDirection);
+                    connectingRoomData.OpenConnections.RemoveAt(removeIndex);
+                    currentRoomData.OpenConnections.RemoveAt(randomIndex);
                     break;
                 case false:
                     var newRoom = Instantiate(_roomPrefab, newPosition, Quaternion.identity, null);
                     _rooms.Add(newRoom);
-                    var door = currentRoom.GetComponent<RoomData>()._OpenConnections[randomIndex];
+                    var door = currentRoom.GetComponent<RoomData>().OpenConnections[randomIndex];
                     door.RoomIndex = i;
-                    currentRoomData._usedConnections.Add(door);
+                    currentRoomData.UsedConnections.Add(door);
                     var newRoomData = newRoom.GetComponent<RoomData>();
-                    newRoomData._usedConnections.Add(new RoomConnections(door.OppositeDirection, _rooms.IndexOf(currentRoom)));
-                    removeIndex = newRoomData._OpenConnections.FindIndex(a => a.ConDirection == door.OppositeDirection);
-                    newRoomData._OpenConnections.RemoveAt(removeIndex);
-                    currentRoomData._OpenConnections.RemoveAt(randomIndex);
+                    newRoomData.UsedConnections.Add(new RoomConnections(door.OppositeDirection, _rooms.IndexOf(currentRoom)));
+                    removeIndex = newRoomData.OpenConnections.FindIndex(a => a.ConDirection == door.OppositeDirection);
+                    newRoomData.OpenConnections.RemoveAt(removeIndex);
+                    currentRoomData.OpenConnections.RemoveAt(randomIndex);
                     if (Random.Range(0f, 1f) < 0.5f)
                         currentRoom = newRoom;
                     else
@@ -145,7 +145,17 @@ public class RoomPlacement : MonoBehaviour
     {
         var CurrentRoom = Instantiate(_roomPrefab, position, Quaternion.identity, null);
     }
-    
+
+    private void ReplaceRoom()
+    {
+        
+    }
+
+    private void RemoveEmptyRoom()
+    {
+
+    }
+
     private void FindRoomLocations()
     {
         _roomPositions = RandomWalker.RandomWalk(Vector2.zero, _numberOfRooms, _gridCellHeight);

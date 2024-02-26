@@ -14,8 +14,8 @@ public class RoomData : MonoBehaviour
     
     private HashSet<Vector2Int> _branchRoomSpawns;
     public RoomType _roomType { get; set;}
-    [SerializeField] public List<RoomConnections> _OpenConnections = new List<RoomConnections>();
-    [SerializeField] public List<RoomConnections> _usedConnections = new List<RoomConnections>();
+    public List<RoomConnections> OpenConnections = new List<RoomConnections>();
+    public List<RoomConnections> UsedConnections = new List<RoomConnections>();
     [SerializeField] private GameObject _connectedUp, _connectedDown, _connectedLeft, _connectedRight;
     [SerializeField] private GameObject _doorUp, _doorDown, _doorLeft, _doorRight;
     [SerializeField] private Collider2D _mainTrigger, _doorUpTrigger, _doorDownTrigger, _doorLeftTrigger, _doorRightTrigger;
@@ -28,11 +28,11 @@ public class RoomData : MonoBehaviour
 
     private void Awake()
     {
-        _OpenConnections = new List<RoomConnections>();
-        _OpenConnections.Add(new RoomConnections(RoomConnections.ConnectionDirections.Up, 0));
-        _OpenConnections.Add(new RoomConnections(RoomConnections.ConnectionDirections.Down, 0));
-        _OpenConnections.Add(new RoomConnections(RoomConnections.ConnectionDirections.Left, 0));
-        _OpenConnections.Add(new RoomConnections(RoomConnections.ConnectionDirections.Right, 0));
+        OpenConnections = new List<RoomConnections>();
+        OpenConnections.Add(new RoomConnections(RoomConnections.ConnectionDirections.Up, 0));
+        OpenConnections.Add(new RoomConnections(RoomConnections.ConnectionDirections.Down, 0));
+        OpenConnections.Add(new RoomConnections(RoomConnections.ConnectionDirections.Left, 0));
+        OpenConnections.Add(new RoomConnections(RoomConnections.ConnectionDirections.Right, 0));
     }
     private void Start()
     {
@@ -59,7 +59,7 @@ public class RoomData : MonoBehaviour
 
     private void SetDoors()
     {
-        _usedConnections.ForEach(connection =>
+        UsedConnections.ForEach(connection =>
         {
             switch (connection.ConDirection)
             {
@@ -89,14 +89,14 @@ public class RoomData : MonoBehaviour
 
     public void SetRoom(RoomData otherRoom)
     {
-        _OpenConnections = otherRoom._OpenConnections;
-        _usedConnections = otherRoom._usedConnections;
+        OpenConnections = otherRoom.OpenConnections;
+        UsedConnections = otherRoom.UsedConnections;
         SetEnemyPositions();
     }
 
     private void SetType()
     {
-        if (_usedConnections.Count == 1)
+        if (UsedConnections.Count == 1)
         {
             _roomType = (RoomType)Random.Range(2, 5);
 
