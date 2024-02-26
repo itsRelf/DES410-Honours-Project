@@ -5706,8 +5706,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb8490d8a0d1f2841bac8819c6a1e26a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _OpenConnections: []
-  _usedConnections: []
+  OpenConnections: []
+  UsedConnections: []
   _connectedUp: {fileID: 0}
   _connectedDown: {fileID: 0}
   _connectedLeft: {fileID: 0}
@@ -5726,6 +5726,11 @@ MonoBehaviour:
   <_ItemPositions>k__BackingField: []
   <_playerInRoom>k__BackingField: 0
   <_firstVisit>k__BackingField: 0
+  _DoorPrefabs:
+  - {fileID: 7424768041443925010, guid: 0d55e91d088b0a241b50776243a81ef9, type: 3}
+  - {fileID: 7424768041443925010, guid: b80c7535d02dfd74280b463db55c206f, type: 3}
+  - {fileID: 7424768041443925010, guid: 753372c491b98aa4e8d06565e2c43964, type: 3}
+  - {fileID: 7424768041443925010, guid: 4f140f5f0b2178f4ca284f0039120d1f, type: 3}
 --- !u!61 &6245638312849906738
 BoxCollider2D:
   m_ObjectHideFlags: 0

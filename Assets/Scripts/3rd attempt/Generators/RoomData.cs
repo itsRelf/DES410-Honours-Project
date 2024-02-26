@@ -25,7 +25,7 @@ public class RoomData : MonoBehaviour
 
     [field: SerializeField] public bool _playerInRoom { get; set; }
     [field: SerializeField] public bool _firstVisit { get; set; }
-
+    [SerializeField] List<GameObject> _DoorPrefabs = new List<GameObject>();
     private void Awake()
     {
         OpenConnections = new List<RoomConnections>();
