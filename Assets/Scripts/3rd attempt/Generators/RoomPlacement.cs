@@ -56,19 +56,29 @@ public class RoomPlacement : MonoBehaviour
         return roomPositions;
     }
 
+    /// <summary>
+    /// Function Generates the Dungeon Layout.
+    /// Generator picks an open possible connection point (Up, Down, Left, Right).
+    /// If a Room is already placed on that point in the grid the rooms are connected together creating loops.
+    /// Once a room has been placed the function determines if the dungeon is built from the newly placed room or another from the list.
+    /// </summary>
     private void MapGen()
     {
         var startPos = Vector2.zero;
         var startingRoom = Instantiate(_roomPrefab, startPos, Quaternion.identity, null);
+        startingRoom.name = "StartRoom";
         _rooms.Add(startingRoom);
         var currentRoom = startingRoom;
         for (var i = 1; i < 20; i++)
         {
+            //get the current room data
             var currentRoomData = currentRoom.GetComponent<RoomData>();
-            var randomIndex = Random.Range(0, currentRoomData.OpenConnections.Count);
-            if (currentRoomData.OpenConnections.Count == 0) continue;
+            //Select an open door slot
+            var RandomDoorIndex = Random.Range(0, currentRoomData.OpenConnections.Count);
+            if (currentRoomData.OpenConnections.Count == 0) continue; //move to another room if no open door slots
             
-            var randomDirection = currentRoomData.OpenConnections[randomIndex].ConDirection;
+            //return a new position based on the door slot chosen. 
+            var randomDirection = currentRoomData.OpenConnections[RandomDoorIndex].ConDirection;
             Vector2 newPosition = currentRoom.transform.position;
             switch (randomDirection)
             {
@@ -93,34 +103,37 @@ public class RoomPlacement : MonoBehaviour
             {
                 if (room.transform.position == (Vector3) newPosition)
                 {
-                    roomInPlace = true;
-                    roomIndex = _rooms.IndexOf(room);
+                    roomInPlace = true; //Room already placed here
+                    roomIndex = _rooms.IndexOf(room); //get the rooms index
                 }
             }
 
             switch (roomInPlace)
             {
                 case true:
-                    var connectingRoomData = _rooms[roomIndex].GetComponent<RoomData>();
-                    currentRoomData.OpenConnections[randomIndex].RoomIndex = roomIndex;
-                    currentRoomData.UsedConnections.Add(currentRoomData.OpenConnections[randomIndex]);
-                    connectingRoomData.UsedConnections.Add(new RoomConnections(currentRoomData.OpenConnections[randomIndex].OppositeDirection, i));
+                    var connectingRoomData = _rooms[roomIndex].GetComponent<RoomData>(); //get the room index of the connecting room
+                    currentRoomData.OpenConnections[RandomDoorIndex].RoomIndex = roomIndex; //set the door slots index to the connecting room.
+                    currentRoomData.UsedConnections.Add(currentRoomData.OpenConnections[RandomDoorIndex]); //add the door to the used connections list.
+                    var currentRoomIndex = _rooms.IndexOf(currentRoom);
+                    connectingRoomData.UsedConnections.Add(new RoomConnections(currentRoomData.OpenConnections[RandomDoorIndex].OppositeDirection, currentRoomIndex));
                     removeIndex = connectingRoomData.OpenConnections.FindIndex(a =>
-                        a.ConDirection == currentRoomData.OpenConnections[randomIndex].OppositeDirection);
+                        a.ConDirection == currentRoomData.OpenConnections[RandomDoorIndex].OppositeDirection);
                     connectingRoomData.OpenConnections.RemoveAt(removeIndex);
-                    currentRoomData.OpenConnections.RemoveAt(randomIndex);
+                    currentRoomData.OpenConnections.RemoveAt(RandomDoorIndex);
                     break;
                 case false:
                     var newRoom = Instantiate(_roomPrefab, newPosition, Quaternion.identity, null);
+                    newRoom.name = "Room " + (_rooms.Count - 1);
                     _rooms.Add(newRoom);
-                    var door = currentRoom.GetComponent<RoomData>().OpenConnections[randomIndex];
-                    door.RoomIndex = i;
+                    var door = currentRoom.GetComponent<RoomData>().OpenConnections[RandomDoorIndex];
+                    door.RoomIndex = _rooms.IndexOf(newRoom);
                     currentRoomData.UsedConnections.Add(door);
                     var newRoomData = newRoom.GetComponent<RoomData>();
                     newRoomData.UsedConnections.Add(new RoomConnections(door.OppositeDirection, _rooms.IndexOf(currentRoom)));
                     removeIndex = newRoomData.OpenConnections.FindIndex(a => a.ConDirection == door.OppositeDirection);
                     newRoomData.OpenConnections.RemoveAt(removeIndex);
-                    currentRoomData.OpenConnections.RemoveAt(randomIndex);
+                    currentRoomData.OpenConnections.RemoveAt(RandomDoorIndex);
+                    newRoomData._firstVisit = true;
                     if (Random.Range(0f, 1f) < 0.5f)
                         currentRoom = newRoom;
                     else
@@ -132,13 +145,21 @@ public class RoomPlacement : MonoBehaviour
         }
     }
 
-    public void Spawn()
+    public void Spawn(int index)
     {
-        var Room = _rooms[0].GetComponent<RoomData>();
-
-        var newRoom = Instantiate(_TestPrefab, new Vector3(50, 50), Quaternion.identity, null);
+        var Room = _rooms[index].GetComponent<RoomData>();
+        if(!Room._firstVisit) 
+        {
+            Debug.Log("Player already been here");
+            return;
+        }
+        var newRoom = Instantiate(_TestPrefab, Room.transform.position, Quaternion.identity, null);
+        newRoom.GetComponent<RoomData>()._firstVisit = false;
         newRoom.GetComponent<RoomData>().SetRoom(Room);
-        _rooms.Add(newRoom);
+        newRoom.name = "newRoomTest " + index;
+        _rooms.Insert(index,newRoom);
+        _rooms.Remove(Room.gameObject);
+        Destroy(Room.gameObject);
     }
 
     private void PlaceRoom(RoomData room, Vector2 position)
