@@ -1,7 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 
 //Based on Steps written by User Inverno969
 [Serializable]
@@ -23,20 +20,13 @@ public class RoomConnections
     {
         ConDirection = conDir;
         RoomIndex = roomIndex;
-        switch (ConDirection)
+        OppositeDirection = ConDirection switch
         {
-            case ConnectionDirections.Up:
-                OppositeDirection = ConnectionDirections.Down;
-                break;
-            case ConnectionDirections.Down:
-                OppositeDirection = ConnectionDirections.Up;
-                break;
-            case ConnectionDirections.Left:
-                OppositeDirection = ConnectionDirections.Right;
-                break;
-            case ConnectionDirections.Right:
-                OppositeDirection = ConnectionDirections.Left;
-                break;
-        }
+            ConnectionDirections.Up => ConnectionDirections.Down,
+            ConnectionDirections.Down => ConnectionDirections.Up,
+            ConnectionDirections.Left => ConnectionDirections.Right,
+            ConnectionDirections.Right => ConnectionDirections.Left,
+            _ => OppositeDirection
+        };
     }
 }

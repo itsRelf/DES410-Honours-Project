@@ -96,7 +96,7 @@ public class RoomPlacement : MonoBehaviour
                     break;
             }
 
-            bool roomInPlace = false;
+            var roomInPlace = false;
             var roomIndex = 0;
             var removeIndex = 0;
             foreach (var room in _rooms)
@@ -160,26 +160,6 @@ public class RoomPlacement : MonoBehaviour
         _rooms.Insert(index,newRoom);
         _rooms.Remove(Room.gameObject);
         Destroy(Room.gameObject);
-    }
-
-    private void PlaceRoom(RoomData room, Vector2 position)
-    {
-        var CurrentRoom = Instantiate(_roomPrefab, position, Quaternion.identity, null);
-    }
-
-    private void ReplaceRoom()
-    {
-        
-    }
-
-    private void RemoveEmptyRoom()
-    {
-
-    }
-
-    private void FindRoomLocations()
-    {
-        _roomPositions = RandomWalker.RandomWalk(Vector2.zero, _numberOfRooms, _gridCellHeight);
     }
 
     private void OnDrawGizmos()

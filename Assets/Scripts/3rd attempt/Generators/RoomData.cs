@@ -20,6 +20,7 @@ public class RoomData : MonoBehaviour
     [SerializeField] private Collider2D _mainTrigger;
     [SerializeField] private List<Vector3Int> _positions;
     [field: SerializeField] public List<Vector3Int> _EnemyPositions { get; private set; }
+    [field: SerializeField] public List<GameObject> _enemies { get; private set; }
     [field: SerializeField] public List<Vector3Int> _ItemPositions { get; private set; }
 
     [field: SerializeField] public bool _playerInRoom { get; set; }
