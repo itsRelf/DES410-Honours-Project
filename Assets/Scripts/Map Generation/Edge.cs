@@ -1,18 +1,17 @@
+using System;
 using UnityEngine;
 
-public class Edge : MonoBehaviour
+[Serializable]
+public class Edge 
 {
-    private Node _nodeA, _nodeB;
+    public Node NodeA, NodeB;
     [field: SerializeField] public bool OneWay { set; get; }
-    [field: SerializeField] public bool Test;
-    public void SetNodes(Node nodeA, Node nodeB)
-    {
-        _nodeA = nodeA;
-        _nodeB = nodeB;
-    }
+    [field: SerializeField] public int Weight { set; get; }
 
-    private void OnDrawGizmos()
+    public Edge(Node nodeA, Node nodeB)
     {
-        Gizmos.DrawLine(_nodeA.transform.position,_nodeB.transform.position);
+        NodeA = nodeA;
+        NodeB = nodeB;
+        Weight = Mathf.FloorToInt(Vector2.Distance(NodeA.Position, NodeB.Position));
     }
 }
