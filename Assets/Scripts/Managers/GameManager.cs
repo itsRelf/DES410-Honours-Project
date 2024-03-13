@@ -66,6 +66,13 @@ public class GameManager : MonoBehaviour
             _currentRoomEnemies = _currentRoom.GetComponent<RoomData>()._enemies;
             _playerHealthOnEntry = _player.GetComponent<PlayerScript>().HealthCheckIn();
         }
+
+        if (_currentRoom == null) return;
+        foreach (var enemy in _currentRoom._enemies)
+        {
+            if(enemy.activeSelf) continue;
+            enemy.SetActive(true);
+        }
     }
     
     //Checks a door the player is about to enter. Determines if the room is to be replaced or not.
@@ -112,6 +119,7 @@ public class GameManager : MonoBehaviour
     private void SpawnPlayer()
     {
         _player = Instantiate(_playerPrefab, Vector2.zero, Quaternion.identity, null);
+        _player.name = "Player";
     }
 
     private void CheckInOnRoomClear()

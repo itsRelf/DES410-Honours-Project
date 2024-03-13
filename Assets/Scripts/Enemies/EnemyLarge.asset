@@ -12,6 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 176761a2d7037a743a95924ac8f50e3a, type: 3}
   m_Name: EnemyLarge
   m_EditorClassIdentifier: 
-  Health: 50
+  Health: 40
   moveSpeed: 2
-  Size: 2

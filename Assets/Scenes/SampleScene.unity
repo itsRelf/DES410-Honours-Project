@@ -274,16 +274,17 @@ MonoBehaviour:
   _gridCellWidth: 9
   _iterations: 0
   _numberOfRooms: 10
-  _EncounterRooms:
-  - {fileID: 21300000, guid: a13b72d251f9bcd46a9c1d47c1a53e0a, type: 3}
-  - {fileID: 21300000, guid: 28ba1ad1024ffd343bce2e8f187f9701, type: 3}
-  - {fileID: 21300000, guid: 62e8601e25a1bfa4c8528b1b9374ae72, type: 3}
-  - {fileID: 21300000, guid: 5821f954ef617a9449e4b6e6384d5a0e, type: 3}
-  _CorridorRooms: []
-  _StartRooms: []
   _rooms: []
+  _potentialRooms: []
+  _lastAddedRoom: {fileID: 0}
   _roomPrefab: {fileID: 5543078929555600958, guid: 88c33f1aea64db343bf886ece1a6384b, type: 3}
-  _TestPrefab: {fileID: 3583016459807050861, guid: 35e2e44fa06b66943a771762618c1a0b, type: 3}
+  _encounter1: {fileID: 3583016459807050861, guid: 35e2e44fa06b66943a771762618c1a0b, type: 3}
+  _encounter2: {fileID: 3583016459807050861, guid: d0f47f2982f8a87449a1073460460066, type: 3}
+  _encounter3: {fileID: 3583016459807050861, guid: 82a5eb7f3ebc8aa4391f156838b101ee, type: 3}
+  _boss1: {fileID: 3583016459807050861, guid: 7fc90ef66576cf749a22b6e95dbec84b, type: 3}
+  _boss2: {fileID: 3583016459807050861, guid: 1007d67489960f3419a9cbbd17ef19b4, type: 3}
+  _shop: {fileID: 5543078929555600958, guid: 6672bb8b48ba5e74c866a351bd4e42da, type: 3}
+  _itemSpawner: {fileID: 1368711697}
 --- !u!1 &478071565
 GameObject:
   m_ObjectHideFlags: 0
@@ -484,6 +485,7 @@ MonoBehaviour:
   _player: {fileID: 0}
   _playerHealthOnEntry: 0
   _playerHealthOnRoomClear: 0
+  _itemSpawner: {fileID: 0}
 --- !u!4 &706367104
 Transform:
   m_ObjectHideFlags: 0
@@ -786,6 +788,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _dropItems:
   - {fileID: 6121972777673984127, guid: c4ae5f13906da204da664f6d0b2ca40b, type: 3}
+  - {fileID: 6121972777673984127, guid: c4ae5f13906da204da664f6d0b2ca40b, type: 3}
   - {fileID: 6121972777673984127, guid: fe893f92e4ae9bf41ab6dd61e7b91196, type: 3}
   - {fileID: 6121972777673984127, guid: fe893f92e4ae9bf41ab6dd61e7b91196, type: 3}
   - {fileID: 6121972777673984127, guid: fe893f92e4ae9bf41ab6dd61e7b91196, type: 3}
@@ -794,8 +797,20 @@ MonoBehaviour:
   - {fileID: 6121972777673984127, guid: fe893f92e4ae9bf41ab6dd61e7b91196, type: 3}
   - {fileID: 6121972777673984127, guid: fe893f92e4ae9bf41ab6dd61e7b91196, type: 3}
   - {fileID: 6121972777673984127, guid: fe893f92e4ae9bf41ab6dd61e7b91196, type: 3}
-  - {fileID: 6121972777673984127, guid: fe893f92e4ae9bf41ab6dd61e7b91196, type: 3}
-  _shopItems: []
+  - {fileID: 3675192504473218423, guid: 915d1d27a866cf84a96f0934667be997, type: 3}
+  - {fileID: 3675192504473218423, guid: 915d1d27a866cf84a96f0934667be997, type: 3}
+  - {fileID: 3675192504473218423, guid: 915d1d27a866cf84a96f0934667be997, type: 3}
+  - {fileID: 3675192504473218423, guid: 915d1d27a866cf84a96f0934667be997, type: 3}
+  - {fileID: 3675192504473218423, guid: 915d1d27a866cf84a96f0934667be997, type: 3}
+  - {fileID: 3675192504473218423, guid: 915d1d27a866cf84a96f0934667be997, type: 3}
+  _shopItems:
+  - {fileID: 3675192504473218423, guid: 94e106d53bcc65e419966923562ba136, type: 3}
+  - {fileID: 3675192504473218423, guid: 94e106d53bcc65e419966923562ba136, type: 3}
+  - {fileID: 3675192504473218423, guid: 915d1d27a866cf84a96f0934667be997, type: 3}
+  - {fileID: 3675192504473218423, guid: 915d1d27a866cf84a96f0934667be997, type: 3}
+  - {fileID: 3675192504473218423, guid: 915d1d27a866cf84a96f0934667be997, type: 3}
+  - {fileID: 3675192504473218423, guid: 915d1d27a866cf84a96f0934667be997, type: 3}
+  - {fileID: 3675192504473218423, guid: 915d1d27a866cf84a96f0934667be997, type: 3}
 --- !u!4 &1368711698
 Transform:
   m_ObjectHideFlags: 0

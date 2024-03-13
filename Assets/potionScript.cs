@@ -2,12 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class coinScript : MonoBehaviour, IPickup
+public class potionScript : MonoBehaviour, IPickup
 {
     [SerializeField] private int value;
     public void HandlePickup(GameObject other)
     {
-        other.GetComponent<PlayerScript>().Currency += value;
+        other.GetComponent<PlayerScript>().Heal(value);
         Destroy(this.gameObject);
     }
 

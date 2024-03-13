@@ -29,6 +29,7 @@ public class RoomData : MonoBehaviour
     [SerializeField] private GameObject _DoorDownPrefab;
     [SerializeField] private GameObject _DoorLeftPrefab;
     [SerializeField] private GameObject _DoorRightPrefab;
+    [field: SerializeField] public bool _finalBossRoom;
     private void Awake()
     {
         OpenConnections = new List<RoomConnections>();
@@ -42,8 +43,11 @@ public class RoomData : MonoBehaviour
     private void Start()
     {
         SetDoors();
-        SetType();        
         _playerInRoom = false;
+        foreach (var enemy in _enemies)
+        {
+            enemy.SetActive(false);
+        }
     }
 
     private void FixedUpdate()
@@ -89,7 +93,7 @@ public class RoomData : MonoBehaviour
         SetEnemyPositions();
     }
 
-    private void SetType()
+    public void SetType()
     {
         if (UsedConnections.Count == 1)
         {
@@ -107,6 +111,16 @@ public class RoomData : MonoBehaviour
             _ => tag
         };
     }
+
+    public void PlaceShopItems(List<GameObject> shopItems)
+    {
+        foreach (var position in _ItemPositions)
+        {
+            var random = Random.Range(0, shopItems.Count);
+            Instantiate(shopItems[random], position, Quaternion.identity, this.transform);
+        }
+    }
+
     private void SetEnemyPositions()
     { 
         for(var i = 0; i < _EnemyPositions.Count; i++)

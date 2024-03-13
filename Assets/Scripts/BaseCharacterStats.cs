@@ -4,5 +4,5 @@ using UnityEngine;
 public class BaseCharacterStats : ScriptableObject
 {
     public int Health;
-    public int moveSpeed;
+    public float moveSpeed;
 }

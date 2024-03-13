@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -11,22 +12,44 @@ public class RoomPlacement : MonoBehaviour
     [SerializeField] [Range(10, 20)] private int _numberOfRooms = 10;
     private HashSet<Vector2> _roomPositions = new HashSet<Vector2>();
 
-    [SerializeField] private List<Sprite> _EncounterRooms;
-    [SerializeField] private List<Sprite> _CorridorRooms;
-    [SerializeField] private List<Sprite> _StartRooms;
-
     [SerializeField] private List<GameObject> _rooms = new List<GameObject>();
+    [SerializeField] private List<GameObject> _potentialRooms;
+    [SerializeField] private GameObject _lastAddedRoom;
 
     public List<GameObject> Rooms => _rooms;
 
     [SerializeField] private GameObject _roomPrefab;
-    [SerializeField] private GameObject _TestPrefab;
+    [SerializeField] private GameObject _encounter1;
+    [SerializeField] private GameObject _encounter2;
+    [SerializeField] private GameObject _encounter3;
+    [SerializeField] private GameObject _boss1;
+    [SerializeField] private GameObject _boss2;
+    [SerializeField] private GameObject _shop;
 
+
+    [SerializeField] private ItemSpawner _itemSpawner;
     void Start()
     {
         _iterations = 6;
         _numberOfRooms = 10;
         MapGen();
+        InitializeList();
+    }
+
+    private void InitializeList()
+    {
+        _potentialRooms = new List<GameObject>();
+
+        _potentialRooms.Add(_encounter1);
+        _potentialRooms.Add(_encounter2);
+        _potentialRooms.Add(_encounter2);
+        _potentialRooms.Add(_encounter2);
+        _potentialRooms.Add(_encounter3);
+        _potentialRooms.Add(_encounter3);
+        _potentialRooms.Add(_encounter3);
+        _potentialRooms.Add(_boss1);
+        _potentialRooms.Add(_boss2);
+        _potentialRooms.Add(_shop);
     }
 
     private IEnumerator MapGeneration()
@@ -143,6 +166,81 @@ public class RoomPlacement : MonoBehaviour
                     break;
             }
         }
+
+        var bossRoomCount = 0;
+        var maxRange = 6;
+        for (var i = 1; i < _rooms.Count; i++)
+        {
+            var script = _rooms[i].GetComponent<RoomData>();
+            if (script.UsedConnections.Count > 1) continue;
+            var random = Random.Range(3, maxRange);
+            switch (random)
+            {
+                case 3:
+                    Debug.Log("Insert Shop");
+                    SpawnShops(i);
+                    break;
+                case 4:
+                    Debug.Log("Insert Treasure");
+                    break;
+                case 5:
+                    Debug.Log("Insert Boss");
+                    SpawnFinalBoss(i);
+                    bossRoomCount++;
+                    maxRange--;
+                    break;
+            }
+
+            if (bossRoomCount != 1 && i == _rooms.Count - 1)
+                i = 1;
+        }
+    }
+
+    public void SpawnFinalBoss(int index)
+    {
+        var room = _rooms[index].GetComponent<RoomData>();
+        var random = Random.Range(0, 10);
+        switch (random)
+        {
+            case < 4:
+                var boss1Room = Instantiate(_boss1, room.transform.position, Quaternion.identity, null);
+                var roomScript = boss1Room.GetComponent<RoomData>();
+                roomScript._firstVisit = false;
+                roomScript.SetRoom(room);
+                boss1Room.name = "FinalBossRoom";
+                roomScript._finalBossRoom = true;
+                _rooms.Insert(index, boss1Room);
+                break;
+            case > 4:
+                var boss2Room = Instantiate(_boss2, room.transform.position, Quaternion.identity, null);
+                roomScript = boss2Room.GetComponent<RoomData>();
+                roomScript._firstVisit = false;
+                roomScript.SetRoom(room);
+                boss2Room.name = "FinalBossRoom_2";
+                roomScript._finalBossRoom = true;
+                _rooms.Insert(index, boss2Room);
+                break;
+        }
+        _rooms.Remove(room.gameObject);
+        Destroy(room.gameObject);
+    }
+
+    public void SpawnShops(int index)
+    {
+        var room = _rooms[index].GetComponent<RoomData>();
+        var shop = Instantiate(_shop, room.transform.position, Quaternion.identity, null);
+        var roomScript = shop.GetComponent<RoomData>();
+        roomScript._firstVisit = false;
+        roomScript.SetRoom(room);
+        shop.name = "Shop " + index;
+        _rooms.Insert(index, shop);
+        _rooms.Remove(room.gameObject);
+        roomScript.PlaceShopItems(_itemSpawner._shopItems);
+    }
+
+    public void SpawnTreasure(int index)
+    {
+
     }
 
     public void Spawn(int index)
@@ -153,13 +251,30 @@ public class RoomPlacement : MonoBehaviour
             Debug.Log("Player already been here");
             return;
         }
-        var newRoom = Instantiate(_TestPrefab, Room.transform.position, Quaternion.identity, null);
+
+        var random = Random.Range(0, _potentialRooms.Count);
+        var newRoom = Instantiate(_potentialRooms[random], Room.transform.position, Quaternion.identity, null);
         newRoom.GetComponent<RoomData>()._firstVisit = false;
         newRoom.GetComponent<RoomData>().SetRoom(Room);
         newRoom.name = "newRoomTest " + index;
         _rooms.Insert(index,newRoom);
         _rooms.Remove(Room.gameObject);
         Destroy(Room.gameObject);
+        if (_lastAddedRoom != null)
+            _potentialRooms.Add(_lastAddedRoom);
+        _lastAddedRoom = _potentialRooms[random];
+        _potentialRooms.RemoveAt(random);
+
+        if(_lastAddedRoom == _boss1 || _lastAddedRoom == _boss2)
+            _potentialRooms.Add(_encounter3);
+        if (_lastAddedRoom == _encounter1 || _lastAddedRoom == _encounter2 || _lastAddedRoom == _encounter3)
+        {
+            random = Random.Range(0, 10);
+            if(random < 5)
+                _potentialRooms.Add(_boss1);
+            else
+                _potentialRooms.Add(_boss2);
+        }
     }
 
     private void OnDrawGizmos()

@@ -5,7 +5,7 @@ using UnityEngine;
 public class ItemSpawner : MonoBehaviour
 {
     [SerializeField] private List<GameObject> _dropItems;
-    [SerializeField] private List<GameObject> _shopItems;
+    [SerializeField] public List<GameObject> _shopItems;
 
     private void Awake()
     {

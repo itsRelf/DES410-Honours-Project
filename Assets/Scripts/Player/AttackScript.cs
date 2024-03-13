@@ -35,7 +35,7 @@ public class AttackScript : MonoBehaviour
         Debug.Log(other.name);
         if (other.tag != "Enemy") return; //guard against hitting player
         var damageable = other.GetComponent<IDamageable>();
-        damageable.HandleDamage(_damage);
+        damageable.HandleDamage(_damage, transform.parent.parent.position);
     }
 
     private void OnDrawGizmos()
