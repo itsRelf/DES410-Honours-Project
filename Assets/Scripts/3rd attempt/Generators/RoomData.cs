@@ -30,6 +30,7 @@ public class RoomData : MonoBehaviour
     [SerializeField] private GameObject _DoorLeftPrefab;
     [SerializeField] private GameObject _DoorRightPrefab;
     [field: SerializeField] public bool _finalBossRoom;
+    [field: SerializeField] public bool _roomCleared;
     private void Awake()
     {
         OpenConnections = new List<RoomConnections>();
@@ -117,7 +118,14 @@ public class RoomData : MonoBehaviour
         foreach (var position in _ItemPositions)
         {
             var random = Random.Range(0, shopItems.Count);
-            Instantiate(shopItems[random], position, Quaternion.identity, this.transform);
+            var shopItem = shopItems[random];
+            switch (shopItem.tag)
+            {
+                case "Potion":
+                    shopItem.GetComponent<potionScript>().ShopItem = true;
+                    break;
+            }
+            Instantiate(shopItem, position + transform.position, Quaternion.identity, this.transform);
         }
     }
 

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -167,33 +168,60 @@ public class RoomPlacement : MonoBehaviour
             }
         }
 
+        var endRooms = new List<GameObject>();
         var bossRoomCount = 0;
         var maxRange = 6;
+
         for (var i = 1; i < _rooms.Count; i++)
         {
             var script = _rooms[i].GetComponent<RoomData>();
             if (script.UsedConnections.Count > 1) continue;
-            var random = Random.Range(3, maxRange);
-            switch (random)
+            endRooms.Add(_rooms[i]);
+        }
+
+        var distance = 0f;
+        var furthestIndex = 0;
+        var bossroomIndex = 0;
+        var startRoom = _rooms[0];
+        foreach (var endRoom in endRooms)
+        {
+            var roomDist = Vector3.Distance(endRoom.transform.position, startRoom.transform.position);
+            Debug.Log(roomDist);
+            if (roomDist > distance)
             {
-                case 3:
+                distance = roomDist;
+                furthestIndex = _rooms.IndexOf(endRoom);
+                bossroomIndex = endRooms.IndexOf(endRoom);
+            }
+            Debug.Log($"Distance between {endRoom} at index {_rooms.IndexOf(endRoom)} and {startRoom} is {roomDist}.");
+        }
+        Debug.Log($"Final boss room is located at index {furthestIndex} with a distance of {distance}");
+
+        endRooms.RemoveAt(bossroomIndex);
+        SpawnFinalBoss(furthestIndex);
+
+        for (var i = 0; i < endRooms.Count; i++)
+        {
+            Debug.Log(endRooms.Count);
+            var script = endRooms[i].GetComponent<RoomData>();
+            if (script.UsedConnections.Count > 1) continue;
+            var index = _rooms.IndexOf(endRooms[i]);
+            Debug.Log(index);
+            var random = Random.Range(0, 6);
+            SpawnShops(index);
+            /*switch (random)
+            {
+                case < 3:
                     Debug.Log("Insert Shop");
-                    SpawnShops(i);
+                    SpawnShops(index);
                     break;
-                case 4:
+                case > 3:
                     Debug.Log("Insert Treasure");
                     break;
-                case 5:
-                    Debug.Log("Insert Boss");
-                    SpawnFinalBoss(i);
-                    bossRoomCount++;
-                    maxRange--;
-                    break;
             }
-
-            if (bossRoomCount != 1 && i == _rooms.Count - 1)
-                i = 1;
+            */
         }
+
     }
 
     public void SpawnFinalBoss(int index)

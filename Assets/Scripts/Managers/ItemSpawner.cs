@@ -14,7 +14,14 @@ public class ItemSpawner : MonoBehaviour
     public void SpawnRandomItem(Vector2 position)
     {
         var index = Random.Range(0, _dropItems.Count);
-        Instantiate(_dropItems[index], position,Quaternion.identity, null);
+        var item = _dropItems[index];
+        switch (item.tag)
+        {
+            case "Potion":
+                item.GetComponent<potionScript>().ShopItem = false;
+                break;
+        }
+        Instantiate(item, position,Quaternion.identity, null);
     }
 
     public void SpawnShopItems(Vector2 podium1, Vector2 podium2, Vector2 podium3)

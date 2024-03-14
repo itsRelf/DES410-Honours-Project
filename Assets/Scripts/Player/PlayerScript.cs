@@ -22,15 +22,17 @@ public class PlayerScript : MonoBehaviour, IDamageable
     [Header("Data")]
     [SerializeField] private float _moveSpeed = 5f;
     [SerializeField] private int _health;
+    [SerializeField] private int _maxHealth;
     [field: SerializeField] public int Currency { get; set; }
     [SerializeField] private float _delay = 0.15f;
     [SerializeField] private int _knockBackStrength = 8;
     [SerializeField] private bool _hit;
+    [SerializeField] public bool Dead;
     
     private void Awake()
     {
         _rigidBody = GetComponent<Rigidbody2D>();
-        _healthBar = FindObjectOfType<HealthBar>();
+        _healthBar = GameObject.Find("PlayerHealth").GetComponent<HealthBar>();
         _currencyUI = GameObject.Find("CurrencyText").GetComponent<TextMeshProUGUI>();
         _playerControls = new PlayerControls();
 
@@ -44,11 +46,11 @@ public class PlayerScript : MonoBehaviour, IDamageable
 
     private void Start()
     {
-        _health = _characterStats.Health;
+        _maxHealth = _characterStats.Health;
+        _health = _maxHealth;
         _moveSpeed = _characterStats.moveSpeed;
 
-        _healthBar.SetMaxHealth(_health);
-        _healthBar.SetHealth(_health);
+        _healthBar.SetMaxHealth(_maxHealth);
 
         Currency = 0;
         UpdateCurrency();
@@ -60,6 +62,7 @@ public class PlayerScript : MonoBehaviour, IDamageable
         if(!_hit)
             HandleMovement();
         UpdateCurrency();
+        Dead = _health <= 0;
     }
 
     void Update()
@@ -102,6 +105,8 @@ public class PlayerScript : MonoBehaviour, IDamageable
     public void Heal(int value)
     {
         _health += value;
+        if (_health >= _maxHealth)
+            _health = _maxHealth;
         _healthBar.SetHealth(_health);
     }
 

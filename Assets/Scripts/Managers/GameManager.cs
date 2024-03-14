@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using UnityEditor.SearchService;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -40,6 +42,7 @@ public class GameManager : MonoBehaviour
         GetCurrentRoom();
         CheckDoorForConnectingRoom();
         EnemyTracker();
+        PlayerTracker();
     }
 
     //Moves the camera smoothly between room positions.
@@ -113,6 +116,7 @@ public class GameManager : MonoBehaviour
             _currentRoomEnemies.RemoveAt(i);
             CheckInOnRoomClear();
         }
+
     }
 
     #region Player Specific Functions
@@ -122,9 +126,17 @@ public class GameManager : MonoBehaviour
         _player.name = "Player";
     }
 
+    private void PlayerTracker()
+    {
+        if (_player.GetComponent<PlayerScript>().Dead)
+            SceneManager.LoadScene("SampleScene");
+    }
+
     private void CheckInOnRoomClear()
     {
         if (_currentRoomEnemies.Count != 0) return;
+        if (_currentRoom.GetComponent<RoomData>()._finalBossRoom)
+            SceneManager.LoadScene("SampleScene");
         _playerHealthOnRoomClear = _player.GetComponent<PlayerScript>().HealthCheckIn();
         var chanceOfItem = Random.Range(0, 10);
         if(chanceOfItem > 3)
@@ -143,10 +155,13 @@ public class GameManager : MonoBehaviour
             case 0:
                 break;
             case > 0 and <= 25:
+                _tension += 25;
                 break;
             case > 25 and <= 50:
+                _tension += 10;
                 break;
             case > 50 and <= 100:
+                _tension -= 50;
                 break;
         }
     }

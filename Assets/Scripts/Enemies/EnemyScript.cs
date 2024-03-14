@@ -16,6 +16,7 @@ public class EnemyScript : MonoBehaviour, IDamageable
     [SerializeField] private float _delay = 0.15f;
     [SerializeField] private int _kickBackStrength = 16;
     [SerializeField] private EnemyAttackScript _attack;
+    [SerializeField] private HealthBar _healthbar;
 
     [SerializeField] private GameObject _player;
 
@@ -30,6 +31,7 @@ public class EnemyScript : MonoBehaviour, IDamageable
     {
         _health = _stats.Health;
         _moveSpeed = _stats.moveSpeed;
+        _healthbar.SetMaxHealth(_health);
     }
 
     // Update is called once per frame
@@ -84,6 +86,7 @@ public class EnemyScript : MonoBehaviour, IDamageable
         Vector2 dir = (transform.position - (Vector3)position).normalized;
         Debug.Log(dir);
         _rigidBody.AddForce(dir * _kickBackStrength, ForceMode2D.Impulse);
+        _healthbar.SetHealth(_health);
         StartCoroutine(Reset());
     }
 
@@ -92,5 +95,10 @@ public class EnemyScript : MonoBehaviour, IDamageable
         yield return new WaitForSeconds(_delay);
         _rigidBody.velocity = Vector2.zero;
         _hit = false;
+    }
+
+    private void OnEnable()
+    {
+        _player = GameObject.Find("Player");
     }
 }

@@ -47,6 +47,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   value: 5
+  cost: 0
+  ShopItem: 0
 --- !u!61 &-198443429367521409
 BoxCollider2D:
   m_ObjectHideFlags: 0
