@@ -3,6 +3,7 @@ using UnityEngine;
 public class coinScript : MonoBehaviour, IPickup
 {
     [SerializeField] private int value;
+    [field: SerializeField] public int dropChance { get; private set; }
     public void HandlePickup(GameObject other)
     {
         other.GetComponent<PlayerScript>().Currency += value;

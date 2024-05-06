@@ -31,6 +31,7 @@ public class RoomData : MonoBehaviour
     [SerializeField] private GameObject _DoorRightPrefab;
     [field: SerializeField] public bool _finalBossRoom;
     [field: SerializeField] public bool _roomCleared;
+
     private void Awake()
     {
         OpenConnections = new List<RoomConnections>();
@@ -56,6 +57,8 @@ public class RoomData : MonoBehaviour
         transform.GetChild(0);
     }
 
+
+    //display the appropriate doors for the rooms connected to the top, bottom, left, or right of this room.
     private void SetDoors()
     {
         UsedConnections.ForEach(connection =>
@@ -86,6 +89,7 @@ public class RoomData : MonoBehaviour
         });
     }
 
+    //replace the connection point data for the new room with data from the old room. Used during room replacement.
     public void SetRoom(RoomData otherRoom)
     {
         OpenConnections = otherRoom.OpenConnections;
@@ -94,25 +98,7 @@ public class RoomData : MonoBehaviour
         SetEnemyPositions();
     }
 
-    public void SetType()
-    {
-        if (UsedConnections.Count == 1)
-        {
-            _roomType = (RoomType)Random.Range(2, 5);
-            _firstVisit = false;
-        }
-
-        tag = _roomType switch
-        {
-            RoomType.Empty => "EmptyRoom",
-            RoomType.Encounter => "EncounterRoom",
-            RoomType.Treasure => "TreasureRoom",
-            RoomType.Shop => "ShopRoom",
-            RoomType.Boss => "BossRoom",
-            _ => tag
-        };
-    }
-
+    //Place shop items into appropriate positions, apply the offset for the rooms current world space position.
     public void PlaceShopItems(List<GameObject> shopItems)
     {
         foreach (var position in _ItemPositions)

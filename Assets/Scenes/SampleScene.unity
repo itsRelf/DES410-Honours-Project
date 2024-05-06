@@ -273,18 +273,27 @@ MonoBehaviour:
   _gridCellHeight: 9
   _gridCellWidth: 9
   _iterations: 0
-  _numberOfRooms: 10
+  _numberOfRooms: 20
   _rooms: []
   _potentialRooms: []
+  _encounterRooms:
+  - {fileID: 3583016459807050861, guid: 35e2e44fa06b66943a771762618c1a0b, type: 3}
+  - {fileID: 3583016459807050861, guid: d0f47f2982f8a87449a1073460460066, type: 3}
+  - {fileID: 3583016459807050861, guid: 82a5eb7f3ebc8aa4391f156838b101ee, type: 3}
+  _shopRoom:
+  - {fileID: 5543078929555600958, guid: 6672bb8b48ba5e74c866a351bd4e42da, type: 3}
+  _treasureRoom:
+  - {fileID: 5543078929555600958, guid: fe65c85a35dae6c4099382d118756dd4, type: 3}
+  _bossRooms:
+  - {fileID: 3583016459807050861, guid: 1007d67489960f3419a9cbbd17ef19b4, type: 3}
+  - {fileID: 3583016459807050861, guid: 7fc90ef66576cf749a22b6e95dbec84b, type: 3}
   _lastAddedRoom: {fileID: 0}
   _roomPrefab: {fileID: 5543078929555600958, guid: 88c33f1aea64db343bf886ece1a6384b, type: 3}
-  _encounter1: {fileID: 3583016459807050861, guid: 35e2e44fa06b66943a771762618c1a0b, type: 3}
-  _encounter2: {fileID: 3583016459807050861, guid: d0f47f2982f8a87449a1073460460066, type: 3}
-  _encounter3: {fileID: 3583016459807050861, guid: 82a5eb7f3ebc8aa4391f156838b101ee, type: 3}
-  _boss1: {fileID: 3583016459807050861, guid: 7fc90ef66576cf749a22b6e95dbec84b, type: 3}
-  _boss2: {fileID: 3583016459807050861, guid: 1007d67489960f3419a9cbbd17ef19b4, type: 3}
-  _shop: {fileID: 5543078929555600958, guid: 6672bb8b48ba5e74c866a351bd4e42da, type: 3}
   _itemSpawner: {fileID: 1368711697}
+  _encounterWeight: 100
+  _shopWeight: 5
+  _treasureWeight: 2
+  _bossWeight: 1
 --- !u!1 &478071565
 GameObject:
   m_ObjectHideFlags: 0
@@ -474,7 +483,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba5b76ed9120656458ea49d1605a3f37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _tension: 0
   _mainCamera: {fileID: 0}
   _roomGenerator: {fileID: 0}
   _currentRoom: {fileID: 0}
@@ -483,8 +491,6 @@ MonoBehaviour:
   _currentRoomLocked: 0
   _playerPrefab: {fileID: 7251511801662523647, guid: 25de1da407e0167458d568f480508ce7, type: 3}
   _player: {fileID: 0}
-  _playerHealthOnEntry: 0
-  _playerHealthOnRoomClear: 0
   _itemSpawner: {fileID: 0}
 --- !u!4 &706367104
 Transform:

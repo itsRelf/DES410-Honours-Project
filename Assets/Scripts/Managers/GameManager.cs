@@ -1,12 +1,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
-using UnityEditor.SearchService;
 using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
-    [SerializeField] [Range(0,100)] private int _tension;
     [SerializeField] private Camera _mainCamera;
     [SerializeField] private RoomPlacement _roomGenerator;
     [SerializeField] private RoomData _currentRoom;
@@ -15,8 +13,6 @@ public class GameManager : MonoBehaviour
     [SerializeField] private bool _currentRoomLocked;
     [SerializeField] private GameObject _playerPrefab;
     [SerializeField] private GameObject _player;
-    [SerializeField] private int _playerHealthOnEntry;
-    [SerializeField] private int _playerHealthOnRoomClear;
     [SerializeField] private ItemSpawner _itemSpawner;
 
     private void Awake()
@@ -35,6 +31,7 @@ public class GameManager : MonoBehaviour
     void Update()
     {
         MoveCamera();
+        Exit();
     }
 
     private void FixedUpdate()
@@ -67,7 +64,6 @@ public class GameManager : MonoBehaviour
             _currentRoom = room.GetComponent<RoomData>();
             _currentRoomDoors = _currentRoom.GetComponentsInChildren<DoorScript>().ToList();
             _currentRoomEnemies = _currentRoom.GetComponent<RoomData>()._enemies;
-            _playerHealthOnEntry = _player.GetComponent<PlayerScript>().HealthCheckIn();
         }
 
         if (_currentRoom == null) return;
@@ -83,14 +79,15 @@ public class GameManager : MonoBehaviour
     {
         foreach (var Index in from door in _currentRoomDoors where door.PlayerAtDoor select door.RoomConnection.RoomIndex)
         {
-            Debug.Log(_roomGenerator.Rooms[Index].GetComponent<RoomData>()._firstVisit);
+            //Debug.Log(_roomGenerator.Rooms[Index].GetComponent<RoomData>()._firstVisit);
             ReplaceBaseRoom(Index);
         }
     }
 
     private void ReplaceBaseRoom(int roomIndex)
     {
-        _roomGenerator.Spawn(roomIndex);
+        //_roomGenerator.Spawn(roomIndex);
+        _roomGenerator.EmptyRoomReplacer(roomIndex);
     }
 
     private void LockDoors()
@@ -126,49 +123,33 @@ public class GameManager : MonoBehaviour
         _player.name = "Player";
     }
 
+    //resets the level if the player dies
     private void PlayerTracker()
     {
         if (_player.GetComponent<PlayerScript>().Dead)
             SceneManager.LoadScene("SampleScene");
     }
 
+    //resets the level if the final boss room is cleared or potentially spawns a random item.
     private void CheckInOnRoomClear()
     {
         if (_currentRoomEnemies.Count != 0) return;
         if (_currentRoom.GetComponent<RoomData>()._finalBossRoom)
             SceneManager.LoadScene("SampleScene");
-        _playerHealthOnRoomClear = _player.GetComponent<PlayerScript>().HealthCheckIn();
         var chanceOfItem = Random.Range(0, 10);
         if(chanceOfItem > 3)
             _itemSpawner.SpawnRandomItem(_currentRoom.transform.position);
     }
     #endregion
 
-    #region Game Tension Functions
-
-    private void TensionCheck()
-    {
-        var difference = _playerHealthOnEntry - _playerHealthOnRoomClear;
-
-        switch (difference)
-        {
-            case 0:
-                break;
-            case > 0 and <= 25:
-                _tension += 25;
-                break;
-            case > 25 and <= 50:
-                _tension += 10;
-                break;
-            case > 50 and <= 100:
-                _tension -= 50;
-                break;
-        }
-    }
-    #endregion
-
     private void SpawnItem(Vector2 position)
     {
         _itemSpawner.SpawnRandomItem(position);
+    }
+
+    private void Exit()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+            SceneManager.LoadScene("Menu");
     }
 }

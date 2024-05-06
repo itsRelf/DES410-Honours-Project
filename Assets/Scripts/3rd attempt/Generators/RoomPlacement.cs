@@ -1,89 +1,58 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Random = UnityEngine.Random;
 
 public class RoomPlacement : MonoBehaviour
 {
     [SerializeField] [Range(8, 32)] private float _gridCellHeight = 8, _gridCellWidth = 8;
     [SerializeField] private int _iterations;
-    [SerializeField] [Range(10, 20)] private int _numberOfRooms = 10;
+    [SerializeField] [Range(10, 20)] private int _numberOfRooms = 20;
     private HashSet<Vector2> _roomPositions = new HashSet<Vector2>();
 
     [SerializeField] private List<GameObject> _rooms = new List<GameObject>();
     [SerializeField] private List<GameObject> _potentialRooms;
+    [SerializeField] private List<GameObject> _encounterRooms;
+    [SerializeField] private List<GameObject> _shopRoom;
+    [SerializeField] private List<GameObject> _treasureRoom;
+    [SerializeField] private List<GameObject> _bossRooms;
     [SerializeField] private GameObject _lastAddedRoom;
 
     public List<GameObject> Rooms => _rooms;
 
     [SerializeField] private GameObject _roomPrefab;
-    [SerializeField] private GameObject _encounter1;
-    [SerializeField] private GameObject _encounter2;
-    [SerializeField] private GameObject _encounter3;
-    [SerializeField] private GameObject _boss1;
-    [SerializeField] private GameObject _boss2;
-    [SerializeField] private GameObject _shop;
-
-
     [SerializeField] private ItemSpawner _itemSpawner;
+
+    [SerializeField] [Range(0, 100)] private int _encounterWeight;
+    [SerializeField] [Range(0, 50)] private int _shopWeight;
+    [SerializeField] [Range(0, 40)] private int _treasureWeight;
+    [SerializeField] [Range(0, 30)] private int _bossWeight;
+    private const int MAXSHOPWEIGHT = 50;
+    private const int MAXTREASUREWEIGHT = 40;
+    private const int MAXBOSSWEIGHT = 30;
+
     void Start()
     {
         _iterations = 6;
-        _numberOfRooms = 10;
         MapGen();
-        InitializeList();
     }
 
-    private void InitializeList()
+    private void FixedUpdate()
     {
-        _potentialRooms = new List<GameObject>();
-
-        _potentialRooms.Add(_encounter1);
-        _potentialRooms.Add(_encounter2);
-        _potentialRooms.Add(_encounter2);
-        _potentialRooms.Add(_encounter2);
-        _potentialRooms.Add(_encounter3);
-        _potentialRooms.Add(_encounter3);
-        _potentialRooms.Add(_encounter3);
-        _potentialRooms.Add(_boss1);
-        _potentialRooms.Add(_boss2);
-        _potentialRooms.Add(_shop);
-    }
-
-    private IEnumerator MapGeneration()
-    {
-        _roomPositions = RunRandomWalk(Vector2.zero);
-
-        foreach (var position in _roomPositions)
-        {
-            var room = Instantiate(_roomPrefab, position, Quaternion.identity, null);
-            _rooms.Add(room);
-            yield return new WaitForSeconds(0.05f);
-        }
-        StopAllCoroutines();
-    }
-
-    private HashSet<Vector2> RunRandomWalk(Vector2 startPosition)
-    {
-        var curPos = startPosition;
-        var roomPositions = new HashSet<Vector2>();
-        for (int i = 0; i < _iterations; i++)
-        {
-            var path = RandomWalker.RandomWalk(curPos, _numberOfRooms, _gridCellHeight);
-            roomPositions.UnionWith(path);
-            curPos = roomPositions.ElementAt(Random.Range(0, roomPositions.Count));
-        }
-
-        return roomPositions;
+        if (_shopWeight > MAXSHOPWEIGHT)
+            _shopWeight = MAXSHOPWEIGHT;
+        if (_treasureWeight > MAXTREASUREWEIGHT)
+            _treasureWeight = MAXTREASUREWEIGHT;
+        if (_bossWeight > MAXBOSSWEIGHT)
+            _bossWeight = MAXBOSSWEIGHT;
     }
 
     /// <summary>
     /// Function Generates the Dungeon Layout.
     /// Generator picks an open possible connection point (Up, Down, Left, Right).
-    /// If a Room is already placed on that point in the grid the rooms are connected together creating loops.
+    /// If a room is already placed on that point in the grid the rooms are connected together creating loops.
     /// Once a room has been placed the function determines if the dungeon is built from the newly placed room or another from the list.
     /// </summary>
     private void MapGen()
@@ -93,16 +62,31 @@ public class RoomPlacement : MonoBehaviour
         startingRoom.name = "StartRoom";
         _rooms.Add(startingRoom);
         var currentRoom = startingRoom;
-        for (var i = 1; i < 20; i++)
+        for (var i = 1; i < _numberOfRooms; i++)
         {
             //get the current room data
             var currentRoomData = currentRoom.GetComponent<RoomData>();
             //Select an open door slot
-            var RandomDoorIndex = Random.Range(0, currentRoomData.OpenConnections.Count);
-            if (currentRoomData.OpenConnections.Count == 0) continue; //move to another room if no open door slots
-            
-            //return a new position based on the door slot chosen. 
-            var randomDirection = currentRoomData.OpenConnections[RandomDoorIndex].ConDirection;
+            if (currentRoomData.OpenConnections.Count <= 2)
+            {
+                var roomsStillOpen = _rooms.Where(room => room.GetComponent<RoomData>().OpenConnections.Count >= 2);
+                currentRoom = roomsStillOpen.OrderBy(r => Guid.NewGuid()).FirstOrDefault();
+                if (currentRoom != null)
+                {
+                    currentRoomData = currentRoom.GetComponent<RoomData>();
+                }
+                else
+                {
+                    Debug.Log("Restarting Level Generation");
+                    SceneManager.LoadScene("SampleScene");
+                }
+            }
+
+            if (currentRoomData == null)
+                SceneManager.LoadScene("SampleScene");
+            var randomDoorIndex = Random.Range(0, currentRoomData.OpenConnections.Count);
+            //return a new position based on the door slot chosen.
+            var randomDirection = currentRoomData.OpenConnections[randomDoorIndex].ConDirection;
             Vector2 newPosition = currentRoom.transform.position;
             switch (randomDirection)
             {
@@ -127,47 +111,58 @@ public class RoomPlacement : MonoBehaviour
             {
                 if (room.transform.position == (Vector3) newPosition)
                 {
-                    roomInPlace = true; //Room already placed here
+                    roomInPlace = true; //room already placed here
                     roomIndex = _rooms.IndexOf(room); //get the rooms index
                 }
             }
 
+            /*
+             * if a room is already in this position, we connect the current room with the room in the occupied position.
+             * else, we place a room in the new position and connect the new room to the previous room.
+             */
+            
             switch (roomInPlace)
             {
                 case true:
                     var connectingRoomData = _rooms[roomIndex].GetComponent<RoomData>(); //get the room index of the connecting room
-                    currentRoomData.OpenConnections[RandomDoorIndex].RoomIndex = roomIndex; //set the door slots index to the connecting room.
-                    currentRoomData.UsedConnections.Add(currentRoomData.OpenConnections[RandomDoorIndex]); //add the door to the used connections list.
+                    currentRoomData.OpenConnections[randomDoorIndex].RoomIndex = roomIndex; //set the door slots index to the connecting room.
+                    currentRoomData.UsedConnections.Add(currentRoomData.OpenConnections[randomDoorIndex]); //add the door to the used connections list.
                     var currentRoomIndex = _rooms.IndexOf(currentRoom);
-                    connectingRoomData.UsedConnections.Add(new RoomConnections(currentRoomData.OpenConnections[RandomDoorIndex].OppositeDirection, currentRoomIndex));
+                    connectingRoomData.UsedConnections.Add(new RoomConnections(currentRoomData.OpenConnections[randomDoorIndex].OppositeDirection, currentRoomIndex));
                     removeIndex = connectingRoomData.OpenConnections.FindIndex(a =>
-                        a.ConDirection == currentRoomData.OpenConnections[RandomDoorIndex].OppositeDirection);
+                        a.ConDirection == currentRoomData.OpenConnections[randomDoorIndex].OppositeDirection);
                     connectingRoomData.OpenConnections.RemoveAt(removeIndex);
-                    currentRoomData.OpenConnections.RemoveAt(RandomDoorIndex);
+                    currentRoomData.OpenConnections.RemoveAt(randomDoorIndex);
                     break;
                 case false:
                     var newRoom = Instantiate(_roomPrefab, newPosition, Quaternion.identity, null);
-                    newRoom.name = "Room " + (_rooms.Count - 1);
+                    newRoom.name = "room " + (_rooms.Count - 1);
                     _rooms.Add(newRoom);
-                    var door = currentRoom.GetComponent<RoomData>().OpenConnections[RandomDoorIndex];
+                    var door = currentRoom.GetComponent<RoomData>().OpenConnections[randomDoorIndex];
                     door.RoomIndex = _rooms.IndexOf(newRoom);
                     currentRoomData.UsedConnections.Add(door);
                     var newRoomData = newRoom.GetComponent<RoomData>();
                     newRoomData.UsedConnections.Add(new RoomConnections(door.OppositeDirection, _rooms.IndexOf(currentRoom)));
                     removeIndex = newRoomData.OpenConnections.FindIndex(a => a.ConDirection == door.OppositeDirection);
                     newRoomData.OpenConnections.RemoveAt(removeIndex);
-                    currentRoomData.OpenConnections.RemoveAt(RandomDoorIndex);
+                    currentRoomData.OpenConnections.RemoveAt(randomDoorIndex);
                     newRoomData._firstVisit = true;
-                    if (Random.Range(0f, 1f) < 0.5f)
-                        currentRoom = newRoom;
-                    else
-                    {
-                        currentRoom = _rooms[Random.Range(0, _rooms.Count)];
-                    }
+                    currentRoom = Random.Range(0f, 1f) < 0.5f ? newRoom : _rooms[Random.Range(0, _rooms.Count)];
                     break;
+            }
+
+            // if the number of rooms has not been met, find the difference and remove that from i. continues the loop.
+            if (i == _numberOfRooms - 1 && _rooms.Count != _numberOfRooms)
+            {
+                var difference = _numberOfRooms - _rooms.Count;
+                i -= difference;
+                _iterations++;
+                Debug.Log(_iterations);
             }
         }
 
+        
+        //get all the rooms with only one used connection and store them in the end rooms list.
         var endRooms = new List<GameObject>();
         var bossRoomCount = 0;
         var maxRange = 6;
@@ -179,9 +174,10 @@ public class RoomPlacement : MonoBehaviour
             endRooms.Add(_rooms[i]);
         }
 
+        //find the room the furthest away from the spawn room and set that as the final boss room
         var distance = 0f;
         var furthestIndex = 0;
-        var bossroomIndex = 0;
+        var bossRoomIndex = 0;
         var startRoom = _rooms[0];
         foreach (var endRoom in endRooms)
         {
@@ -191,15 +187,14 @@ public class RoomPlacement : MonoBehaviour
             {
                 distance = roomDist;
                 furthestIndex = _rooms.IndexOf(endRoom);
-                bossroomIndex = endRooms.IndexOf(endRoom);
+                bossRoomIndex = endRooms.IndexOf(endRoom);
             }
-            Debug.Log($"Distance between {endRoom} at index {_rooms.IndexOf(endRoom)} and {startRoom} is {roomDist}.");
         }
-        Debug.Log($"Final boss room is located at index {furthestIndex} with a distance of {distance}");
 
-        endRooms.RemoveAt(bossroomIndex);
+        endRooms.RemoveAt(bossRoomIndex);
         SpawnFinalBoss(furthestIndex);
 
+        //Replace the remaining end rooms with shops.
         for (var i = 0; i < endRooms.Count; i++)
         {
             Debug.Log(endRooms.Count);
@@ -209,100 +204,126 @@ public class RoomPlacement : MonoBehaviour
             Debug.Log(index);
             var random = Random.Range(0, 6);
             SpawnShops(index);
-            /*switch (random)
-            {
-                case < 3:
-                    Debug.Log("Insert Shop");
-                    SpawnShops(index);
-                    break;
-                case > 3:
-                    Debug.Log("Insert Treasure");
-                    break;
-            }
-            */
         }
-
     }
 
+    //Replaces a room with the final boss room.
     public void SpawnFinalBoss(int index)
     {
-        var room = _rooms[index].GetComponent<RoomData>();
-        var random = Random.Range(0, 10);
-        switch (random)
-        {
-            case < 4:
-                var boss1Room = Instantiate(_boss1, room.transform.position, Quaternion.identity, null);
-                var roomScript = boss1Room.GetComponent<RoomData>();
-                roomScript._firstVisit = false;
-                roomScript.SetRoom(room);
-                boss1Room.name = "FinalBossRoom";
-                roomScript._finalBossRoom = true;
-                _rooms.Insert(index, boss1Room);
-                break;
-            case > 4:
-                var boss2Room = Instantiate(_boss2, room.transform.position, Quaternion.identity, null);
-                roomScript = boss2Room.GetComponent<RoomData>();
-                roomScript._firstVisit = false;
-                roomScript.SetRoom(room);
-                boss2Room.name = "FinalBossRoom_2";
-                roomScript._finalBossRoom = true;
-                _rooms.Insert(index, boss2Room);
-                break;
-        }
-        _rooms.Remove(room.gameObject);
-        Destroy(room.gameObject);
+        var room = GetRoomData(index, _rooms);
+        var newRoom = ReturnRoom(_bossRooms);
+        var roomName = "FinalBossRoom";
+        SpawnRoom(roomName, newRoom, room, index);
+        _rooms[index].GetComponent<RoomData>()._finalBossRoom = true;
     }
 
+    //Method to place a show room.
     public void SpawnShops(int index)
     {
-        var room = _rooms[index].GetComponent<RoomData>();
-        var shop = Instantiate(_shop, room.transform.position, Quaternion.identity, null);
-        var roomScript = shop.GetComponent<RoomData>();
-        roomScript._firstVisit = false;
-        roomScript.SetRoom(room);
-        shop.name = "Shop " + index;
-        _rooms.Insert(index, shop);
-        _rooms.Remove(room.gameObject);
+        var room = GetRoomData(index, _rooms);
+        var newRoom = ReturnRoom(_shopRoom);
+        var roomName = "Shop " + index;  
+        SpawnRoom(roomName, newRoom, room, index);
+        var roomScript = _rooms[index].GetComponent<RoomData>();
         roomScript.PlaceShopItems(_itemSpawner._shopItems);
     }
 
-    public void SpawnTreasure(int index)
-    {
 
+    /*
+     * Using weighted random numbers this function replaces rooms if it is the players first visit.
+     * weighted values are increased/decreased depending on the result of the RNG.
+     */
+    public void EmptyRoomReplacer(int index)
+    {
+        var roomData = GetRoomData(index, _rooms);
+        if (!roomData._firstVisit) return;
+
+        var weightList = new List<int>
+        {
+            _bossWeight,
+            _encounterWeight,
+            _shopWeight,
+            _treasureWeight
+        };
+
+        var randomNumber = Random.Range(1, 101);
+        var possibleWeight = _encounterWeight;
+        foreach (var weight in weightList)
+        {
+            if (randomNumber <= weight)
+                possibleWeight = weight;
+        }
+
+        if (possibleWeight <= _encounterWeight && possibleWeight > _shopWeight && possibleWeight > _treasureWeight && possibleWeight > _bossWeight)
+        {
+            var newRoom = ReturnRoom(_encounterRooms);
+            var roomName = newRoom.name;
+            SpawnRoom(roomName, newRoom, roomData, index);
+            _bossWeight = _bossWeight >= MAXBOSSWEIGHT ? MAXBOSSWEIGHT : _bossWeight += 1;
+            _shopWeight = _shopWeight >= MAXSHOPWEIGHT ? MAXSHOPWEIGHT : _shopWeight += 5;
+            _treasureWeight = _treasureWeight >= MAXTREASUREWEIGHT ? MAXTREASUREWEIGHT : _treasureWeight += 3;
+        }
+        else if (possibleWeight <= _encounterWeight && possibleWeight <= _shopWeight && possibleWeight > _treasureWeight && possibleWeight > _bossWeight)
+        {
+            var newRoom = ReturnRoom(_shopRoom);
+            var roomName = newRoom.name;
+            SpawnRoom(roomName, newRoom, roomData, index);
+            var shopData = _rooms[index].GetComponent<RoomData>();
+            shopData.PlaceShopItems(_itemSpawner._shopItems);
+            _bossWeight = _bossWeight >= MAXBOSSWEIGHT ? MAXBOSSWEIGHT : _bossWeight += 1;
+            _shopWeight = 2;
+            _treasureWeight = 1;
+        }
+        else if (possibleWeight <= _encounterWeight && possibleWeight <= _shopWeight && possibleWeight <= _treasureWeight && possibleWeight > _bossWeight)
+        {
+            var newRoom = ReturnRoom(_treasureRoom);
+            var roomName = newRoom.name;
+            SpawnRoom(roomName, newRoom, roomData, index);
+            var treasureData = _rooms[index].GetComponent<RoomData>();
+            var position = new Vector2(treasureData._ItemPositions[0].x, treasureData._ItemPositions[0].y) 
+                           + (Vector2)treasureData.transform.position;
+            _itemSpawner.SpawnTreasure(position);
+            _bossWeight = _bossWeight >= MAXBOSSWEIGHT ? MAXBOSSWEIGHT : _bossWeight += 1;
+            _shopWeight = 2;
+            _treasureWeight = 1;
+        }
+        else if (possibleWeight <= _encounterWeight && possibleWeight <= _shopWeight && possibleWeight <= _treasureWeight && possibleWeight <= _bossWeight)
+        {
+            var newRoom = ReturnRoom(_bossRooms);
+            var roomName = newRoom.name;
+            SpawnRoom(roomName, newRoom, roomData, index);
+            _bossWeight = 0;
+            _shopWeight = _shopWeight >= MAXSHOPWEIGHT ? MAXSHOPWEIGHT : _shopWeight += 10;
+            _treasureWeight = _treasureWeight >= MAXTREASUREWEIGHT ? MAXTREASUREWEIGHT : _treasureWeight += 10;
+        }
     }
 
-    public void Spawn(int index)
+    /*
+     * Instantiates the new room to be added to the dungeon
+     * inserts the new room at the passed in index. 
+     * removes the empty room from the list of rooms and deletes the game object for the old room.
+     */
+    private void SpawnRoom(string roomName, GameObject newRoom, RoomData oldRoomData, int index) 
     {
-        var Room = _rooms[index].GetComponent<RoomData>();
-        if(!Room._firstVisit) 
-        {
-            Debug.Log("Player already been here");
-            return;
-        }
+        var newRoom2 = Instantiate(newRoom, oldRoomData.transform.position, Quaternion.identity, null);
+        newRoom2.name = roomName;
+        newRoom2.GetComponent<RoomData>().SetRoom(oldRoomData);
+        newRoom2.GetComponent<RoomData>()._firstVisit = false;
+        _rooms.Insert(index, newRoom2);
+        _rooms.Remove(oldRoomData.gameObject);
+        Destroy(oldRoomData.gameObject);
+    }
 
-        var random = Random.Range(0, _potentialRooms.Count);
-        var newRoom = Instantiate(_potentialRooms[random], Room.transform.position, Quaternion.identity, null);
-        newRoom.GetComponent<RoomData>()._firstVisit = false;
-        newRoom.GetComponent<RoomData>().SetRoom(Room);
-        newRoom.name = "newRoomTest " + index;
-        _rooms.Insert(index,newRoom);
-        _rooms.Remove(Room.gameObject);
-        Destroy(Room.gameObject);
-        if (_lastAddedRoom != null)
-            _potentialRooms.Add(_lastAddedRoom);
-        _lastAddedRoom = _potentialRooms[random];
-        _potentialRooms.RemoveAt(random);
+    //returns the room data script for the desired room.
+    private static RoomData GetRoomData(int index, List<GameObject> rooms)
+    {
+        return rooms[index].GetComponent<RoomData>();
+    }
 
-        if(_lastAddedRoom == _boss1 || _lastAddedRoom == _boss2)
-            _potentialRooms.Add(_encounter3);
-        if (_lastAddedRoom == _encounter1 || _lastAddedRoom == _encounter2 || _lastAddedRoom == _encounter3)
-        {
-            random = Random.Range(0, 10);
-            if(random < 5)
-                _potentialRooms.Add(_boss1);
-            else
-                _potentialRooms.Add(_boss2);
-        }
+    //returns a room from a passed in list
+    private static GameObject ReturnRoom(List<GameObject> roomTypeList)
+    {
+        return roomTypeList[Random.Range(0, roomTypeList.Count)];
     }
 
     private void OnDrawGizmos()

@@ -7,6 +7,7 @@ public class potionScript : MonoBehaviour, IPickup
 {
     [SerializeField] private int value;
     [SerializeField] private int cost;
+    [field: SerializeField] public int dropChance { get; private set; }
     [SerializeField] public bool ShopItem;
 
     [SerializeField]
@@ -27,6 +28,7 @@ public class potionScript : MonoBehaviour, IPickup
         Destroy(this.gameObject);
     }
 
+    //only active when the player steps on the collider
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (other.tag != "Player") return;
@@ -34,6 +36,8 @@ public class potionScript : MonoBehaviour, IPickup
         {
             var currentCash = other.GetComponent<PlayerScript>().Currency;
             if (currentCash < cost) return;
+            currentCash -= cost;
+            other.GetComponent<PlayerScript>().Currency = currentCash;
             HandlePickup(other.gameObject);
 
         }

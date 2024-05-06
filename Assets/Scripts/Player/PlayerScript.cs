@@ -8,7 +8,6 @@ public class PlayerScript : MonoBehaviour, IDamageable
     [Header("Components")]
     [SerializeField] private BaseCharacterStats _characterStats;
     [SerializeField] private Rigidbody2D _rigidBody;
-    [SerializeField] private PlayerControls _playerControls;
     [SerializeField] private Animator _weaponAnimator;
 
     [Header("Children Components")]
@@ -28,6 +27,13 @@ public class PlayerScript : MonoBehaviour, IDamageable
     [SerializeField] private int _knockBackStrength = 8;
     [SerializeField] private bool _hit;
     [SerializeField] public bool Dead;
+
+    [Header("Controls")]
+    [SerializeField] private PlayerControls _playerControls;
+    [SerializeField] private bool _dodging;
+    [SerializeField] private bool _newDodgePressNeeded;
+    [SerializeField] private bool _isImmune;
+
     
     private void Awake()
     {
@@ -36,12 +42,19 @@ public class PlayerScript : MonoBehaviour, IDamageable
         _currencyUI = GameObject.Find("CurrencyText").GetComponent<TextMeshProUGUI>();
         _playerControls = new PlayerControls();
 
-        _playerControls.Default.Attack.performed += Attack_performed; ;
-    }
+        _playerControls.Default.Attack.performed += ctx =>
+        {
+            _weaponAnimator.SetTrigger("Attacking");
+        };
+        _playerControls.Default.Dash.started += ctx => _dodging = ctx.ReadValueAsButton();
+        _playerControls.Default.Dash.performed += ctx => _dodging = ctx.ReadValueAsButton();
+        _playerControls.Default.Dash.canceled += ctx =>
+        {
+            //_dodging = ctx.ReadValueAsButton();
+            if (_newDodgePressNeeded)
+                _newDodgePressNeeded = false;
+        };
 
-    private void Attack_performed(InputAction.CallbackContext obj)
-    {
-        _weaponAnimator.SetTrigger("Attacking");
     }
 
     private void Start()
@@ -59,15 +72,20 @@ public class PlayerScript : MonoBehaviour, IDamageable
 
     private void FixedUpdate()
     {
-        if(!_hit)
+        if (!_hit && !_dodging)
+        {
+            //Debug.Log($"Dodging: {_dodging}\n Hit: {_hit}");
             HandleMovement();
+        }
+        if(_dodging && !_newDodgePressNeeded)
+            HandleDash();
         UpdateCurrency();
         Dead = _health <= 0;
     }
 
     void Update()
     {
-        RotateElbow();
+        RotateElbow(); //rotates the weapon around the player
     }
 
     private void UpdateCurrency()
@@ -75,7 +93,7 @@ public class PlayerScript : MonoBehaviour, IDamageable
         _currencyUI.text = Currency.ToString();
     }
 
-    public void HandleDamage(int damageValue, Vector2 position)
+    public void HandleDamage(int damageValue, Vector2 position) //apply damage to the player along with a knockback
     {
         if (_hit) return;
         StopAllCoroutines();
@@ -84,13 +102,24 @@ public class PlayerScript : MonoBehaviour, IDamageable
         _healthBar.SetHealth(_health);
         Vector2 dir = (transform.position - (Vector3)position).normalized;
         _rigidBody.AddForce(dir * _knockBackStrength, ForceMode2D.Impulse);
+        _isImmune = true;
         StartCoroutine(Reset());
     }
 
     private void HandleMovement()
     {
+        //Debug.Log($"Dodging: {_dodging}\n Hit: {_hit}\n Moving");
         var velocity = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
         _rigidBody.MovePosition(_rigidBody.position + velocity * _moveSpeed * Time.fixedDeltaTime);
+    }
+
+    private void HandleDash() //apply forward momentum to the player in the direction of the mouse.
+    {
+       //Debug.Log("Dodging");
+        Vector2 dir = (Camera.main.ScreenToWorldPoint(Input.mousePosition) - transform.position).normalized;
+        //Debug.Log(dir);
+        _rigidBody.AddForce(dir * _moveSpeed, ForceMode2D.Impulse);
+        StartCoroutine(Reset());
     }
 
     private void RotateElbow()
@@ -115,11 +144,20 @@ public class PlayerScript : MonoBehaviour, IDamageable
         return _health;
     }
 
-    private IEnumerator Reset()
+    private IEnumerator Reset() //reset any applied force to the player rigid body
     {
         yield return new WaitForSeconds(_delay);
         _rigidBody.velocity = Vector2.zero;
-        _hit = false;
+        if(_hit)
+            _hit = false;
+        if (_isImmune)
+            _isImmune = false;
+        if (_dodging)
+        {
+            _newDodgePressNeeded = true;
+        }
+
+        _dodging = false;
     }
 
     private void OnEnable()

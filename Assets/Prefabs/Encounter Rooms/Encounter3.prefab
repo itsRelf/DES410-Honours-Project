@@ -2803,8 +2803,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb8490d8a0d1f2841bac8819c6a1e26a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  OpenConnections: []
-  UsedConnections: []
+  OpenConnections:
+  - ConDirection: 3
+    OppositeDirection: 2
+    RoomIndex: 0
+  UsedConnections:
+  - ConDirection: 2
+    OppositeDirection: 3
+    RoomIndex: 0
+  - ConDirection: 0
+    OppositeDirection: 1
+    RoomIndex: 4
+  - ConDirection: 1
+    OppositeDirection: 0
+    RoomIndex: 7
   _doorUp: {fileID: 2670762177855055989}
   _doorDown: {fileID: 730606576360663347}
   _doorLeft: {fileID: 2065491105040609316}
@@ -2827,6 +2839,8 @@ MonoBehaviour:
   _DoorDownPrefab: {fileID: 7424768041443925010, guid: b80c7535d02dfd74280b463db55c206f, type: 3}
   _DoorLeftPrefab: {fileID: 7424768041443925010, guid: 753372c491b98aa4e8d06565e2c43964, type: 3}
   _DoorRightPrefab: {fileID: 7424768041443925010, guid: 4f140f5f0b2178f4ca284f0039120d1f, type: 3}
+  _finalBossRoom: 0
+  _roomCleared: 0
 --- !u!61 &2439011490835857842
 BoxCollider2D:
   m_ObjectHideFlags: 0

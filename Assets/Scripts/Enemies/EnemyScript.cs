@@ -1,5 +1,4 @@
 using System.Collections;
-using TMPro;
 using UnityEngine;
 
 public class EnemyScript : MonoBehaviour, IDamageable
@@ -46,16 +45,20 @@ public class EnemyScript : MonoBehaviour, IDamageable
         if (!_hit)
             MoveToPlayer();
     }
+
+
     private void TrackHealth()
     {
         IsDead = _health <= 0;
     }
 
+    //prevents enemy from spamming attacks
     private void HandleCoolDown()
     {
         _cooldown = _cooldown > 0 ? _cooldown -= Time.deltaTime : 0;
     }
 
+    //Move the enemy towards the player while they are within range.
     private void MoveToPlayer()
     {
         if (_player == null)
@@ -77,6 +80,7 @@ public class EnemyScript : MonoBehaviour, IDamageable
         }
     }
 
+    //When applying damage to the enemy, add a knockback to the enemy
     public void HandleDamage(int damageValue, Vector2 position)
     {
         if (_hit) return;
